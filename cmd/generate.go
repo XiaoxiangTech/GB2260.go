@@ -67,7 +67,7 @@ func generateFileData(fileName string) (string, error) {
 // before use it, you should use go build and then execute the generate (or generate.exe)
 func main() {
 	dir := "../data/mca/"
-	names := []int{201904}
+	names := []int{201904, 202112}
 
 	gocode := `package gb2260
 var (
