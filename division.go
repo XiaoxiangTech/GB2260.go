@@ -13,7 +13,7 @@ type GB2260 struct {
 }
 
 var (
-	_LatestRevision = "201904"
+	_LatestRevision = "202112"
 )
 
 // NewGB2260 If revision is not specified, use the latest data.

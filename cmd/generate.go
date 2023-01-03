@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bufio"
+	"encoding/csv"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -28,27 +28,34 @@ func generateFileData(fileName string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
-	divisions := "map[string]string{"
-	buff := bufio.NewReader(file)
-	for {
-		line, err := buff.ReadString('\n')
+	defer func() {
+		err := file.Close()
 		if err != nil {
-			if err == io.EOF {
-				break
-			}
+			log.Printf("error while close file, filename=%s, err=%+v\n", fileName, err)
 		}
+	}()
 
-		lineScanner := bufio.NewScanner(strings.NewReader(line))
-		lineScanner.Split(bufio.ScanWords)
-		lineScanner.Scan()
-		lineScanner.Scan()
+	divisions := "map[string]string{\n"
+	csvReader := csv.NewReader(file)
+	csvReader.FieldsPerRecord = 4
+	csvReader.Comma = '\t'
 
-		lineScanner.Scan()
-		code := lineScanner.Text()
+	const (
+		codeIndex = 2
+		nameIndex = 3
+	)
 
-		lineScanner.Scan()
-		name := lineScanner.Text()
+	for lineNum := 1; ; lineNum++ {
+		line, err := csvReader.Read()
+		if err == io.EOF {
+			break
+		}
+		if lineNum == 1 {
+			// skip tsv header
+			continue
+		}
+		code := line[codeIndex]
+		name := line[nameIndex]
 
 		divisions += fmt.Sprintf(`"%s": "%s",`, code, name) + "\n"
 	}
@@ -60,7 +67,7 @@ func generateFileData(fileName string) (string, error) {
 // before use it, you should use go build and then execute the generate (or generate.exe)
 func main() {
 	dir := "../data/mca/"
-	names := []int{201904}
+	names := []int{201904, 202112}
 
 	gocode := `package gb2260
 var (
